@@ -13,8 +13,26 @@ testdata=fromJSON(file="./data/test.json")
 # print(result)
 
 # Convert JSON file to a data frame.
-trainDf <- as.data.frame(traindata)
+# trainDf <- as.data.frame(traindata) #not work
 trainDf = data.frame(matrix(unlist(traindata), nrow=1195, byrow=T))
+str(unlist(traindata))
+vars=unique(unlist(lapply(traindata, names))) #names of top layer lists
+vars
+ae=unlist(lapply(traindata$audio_embedding, c()))
+str(traindata[[1]]$audio_embedding) #List of 10  X128
+str(traindata[[36]]$audio_embedding) #List of 9
+
+#convert nested list to dataframe
+library(data.table)
+trainDf = rbindlist(traindata, fill=TRUE)
+library(dplyr)
+trainDf = bind_rows(traindata)
+
+#
+temp = unique(unlist(lapply(traindata, names)))
+mydf = setNames(object = data.frame(lapply(temp, function(nm)
+  unlist(lapply(traindata, function(x) x[[nm]])))), nm = temp)
+
 
 head(trainDf) 
 str(trainDf)
@@ -180,11 +198,14 @@ colnames(aud_df)=col
 for (i in seq_along(traindata))   {
   aud_vec=unlist(traindata[[i]]$audio_embedding)
   # aud_vec=t(as.data.frame(aud_vec))
+  aud_dft=as.data.frame(t(as.data.frame(aud_vec)))
+  # colnames(aud_dft)=col  
   if (length(aud_vec)==1280){ 
-  aud_df=rbind(aud_df, as.data.frame(t(as.data.frame(aud_vec))))
+  aud_df=rbind.fill(aud_df, aud_dft)
   }
 }
-
+unique(colnames(aud_df))
+tail(colnames(aud_df))
 colnames(aud_df)=col  
 dim(aud_df)
 aud_df[, 1:3]
