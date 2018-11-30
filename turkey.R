@@ -160,23 +160,29 @@ str(traindata[[3]])
 traindata[[3]]$is_turkey
 traindata[[3]][[2]]
 traindata[[3]][2]
+traindata[[36]][1]
 
 traindata[[3]]$audio_embedding[[2]]
 str(traindata[[3]]$audio_embedding[[2]])
 traindata[[3]]$audio_embedding
 str(traindata[[3]]$audio_embedding)
-as.vector(traindata[[3]]$audio_embedding)
-
+unlist(traindata[[3]]$audio_embedding)
+x=as.data.frame(unlist(traindata[[3]]$audio_embedding))
+x=t(x)
+x=as.data.frame(x)
+##
+library(plyr)
 aud_df=data.frame(matrix(ncol = 1280, nrow = 0))
 # aud_dft=data.frame()
 col=paste("ae", as.character(seq(1280)), sep="")  
 colnames(aud_df)=col
 
-library(plyr)
-for (i in 1:36)   {
-  aud_vec=traindata[[i]]$audio_embedding[[2]]
-  aud_vec=t(as.data.frame(aud_vec))
-  aud_df=rbind(aud_df, aud_vec)
+for (i in seq_along(traindata))   {
+  aud_vec=unlist(traindata[[i]]$audio_embedding)
+  # aud_vec=t(as.data.frame(aud_vec))
+  if (length(aud_vec)==1280){ 
+  aud_df=rbind(aud_df, as.data.frame(t(as.data.frame(aud_vec))))
+  }
 }
 
 colnames(aud_df)=col  
