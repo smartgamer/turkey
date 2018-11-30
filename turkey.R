@@ -1,6 +1,6 @@
 
 getwd()
-traindata=read.csv("./train.json")
+
 
 # Load the package required to read JSON files.
 library("rjson")
@@ -10,12 +10,15 @@ traindata <- fromJSON(file = "./data/train.json")
 testdata=fromJSON(file="./data/test.json")
 
 # Print the result.
-print(result)
+# print(result)
 
 # Convert JSON file to a data frame.
 trainDf <- as.data.frame(traindata)
+trainDf = unlist(traindata)
+head(trainDf) 
+str(trainDf)
 
-class(traindata)  #list
+class(traindata)  #list 
 class(trainDf)
 str(trainDf)
 str(traindata)
@@ -24,7 +27,9 @@ str(traindata[[1]]) #List of 5
 str(traindata[[1]][[1]]) #List of 10
 str(traindata[[1]][[1]][[1]])  #num [1:128] 172 34 216 110 208 46 95 66 161 125 ...
 
-str(traindata[[10]][[4]])
+str(traindata[[1000]][[2]])
+traindata[[1000]][[2]]
+
 
 traindata[[128]][[1]]
 head(trainDf[,1:5])
@@ -45,9 +50,28 @@ install.packages("randomForest")
 library(party)
 library(randomForest)
 
+set.seed(1001)
+tvar = setdiff(colnames(trainDf[,1:10]), list('id','isturkey'))
+fmodel= randomForest(x=trainDf[, tvar], y=as.factor(trainDf$isturkey), importance = T)  #ntree = 100, nodesize = 7, 
+
+unique(trainDf$isturkey)
+tail(trainDf$isturkey)
+summary(trainDf$isturkey)
+
+
+accuracyMeasures(predict(fmodel, newdata = trainDf[, tvar], type="prob")[, 'isturkey'], trainDf$isturkey=="1", name="random forest, train")
+
+varImp=importance(fmodel)
+varImp[1:10, ]
+varImpPlot(fmodel, type=1)
+
+#fit with fewer variables
+selVars = names(sort(varImp[,1], decreasing = T))[1:25]
+fsel = randomForest(x=trainDf[,selVars], y=trainDf$isturkey, ntree=100, nodesize = 7, importance = T)
+
 # Create the forest.
 output.forest <- randomForest(isturkey ~ ., data = trainDf)
-
+output.forest <- randomForest(isturkey ~ end+start, data = trainDf)
 # View the forest results.
 print(output.forest) 
 
@@ -86,6 +110,78 @@ to.remove<-c(to.remove, which(data.frame(iris.rf$importance)$MeanDecreaseAccurac
 
 
 
+#################
+#####
+
+library(caret)
+# inTrain <‐ createDataPartition(y=Wage$wage, p=0.7, list=FALSE)
+# training <‐ Wage[inTrain,]; testing <‐ Wage[‐inTrain,]
+hist(training$is_turkey ,main="",xlab="is turkey")
+hist(training$end_time_seconds_youtube_clip ,main="",xlab="end time")
+hist(training$start_time_seconds_youtube_clip ,main="",xlab="start time")
+table(training$is_turkey)
+table(training$start_time_seconds_youtube_clip)
+dummies = dummyVars(is_turkey ~ start_time_seconds_youtube_clip,data=training)
+head(predict(dummies,newdata=training))
+# Removing zero covariates
+nsv = nearZeroVar(training[,2:5],saveMetrics=TRUE)
+nsv
+
+# convert matrix to list before build models
+str(training$audio_embedding)
+
+audiolist= training$audio_embedding[[36]]
+head(audiolist, n=10)
+
+audioList36= as.vector(training$audio_embedding[[36]])
+audioList36=as.list(audioList36)
+
+audioList1= as.vector(training$audio_embedding[[1]])
+audioList1=as.list(audioList1)
+hist(audioList1)
+summary(audioList1)
+head(audioList1)
+adf=as.data.frame(audioList1)
+adft=t(adf)
+head(adft[,1:5])
+adft[1,1:6]
+colnames(adft)
+
+
+aud_df=data.frame(matrix(ncol = 1280, nrow = 0))
+# aud_dft=data.frame()
+col=paste("ae", as.character(seq(1280)), sep="")  
+colnames(aud_df)=col
+
+library(plyr)
+for (i in 1:36)   {
+  aud_vec=as.vector(training$audio_embedding[[i]])
+  aud_vec=t(as.data.frame(aud_vec))
+  aud_df=rbind.fill(aud_df, aud_vec)
+}
+
+colnames(aud_df)=col  
+dim(aud_df)
+aud_df[, 1:3]
+head(aud_df[, 30])
+tail(aud_df)
+aud_vec[1]=as.vector(training$audio_embedding[[1]])  
+seq_along(training$audio_embedding)
+# aud_df=as.data.frame(aud_vec)
+# aud_dft[i,]=t(aud_df)
+
+
+
+
+
+#predict with random forest
+modFit = train(is_turkey ~ .,data=training[2:5],method="rf",prox=TRUE)
+modFit
+
+# Predicting new values
+pred = predict(modFit,testing); testing$predRight = pred==testing$Species
+table(pred,testing$Species)
+qplot(Petal.Width,Petal.Length,colour=predRight,data=testing,main="newdata Predictions")
 
 
 
