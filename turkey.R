@@ -14,9 +14,12 @@ testdata=fromJSON(file="./data/test.json")
 
 # Convert JSON file to a data frame.
 trainDf <- as.data.frame(traindata)
-trainDf = unlist(traindata)
+trainDf = data.frame(matrix(unlist(traindata), nrow=1195, byrow=T))
+
 head(trainDf) 
 str(trainDf)
+tail(colnames(trainDf))
+tail(trainDf[, 1266:1268])
 
 class(traindata)  #list 
 class(trainDf)
@@ -40,6 +43,12 @@ colnames(trainDf)=col
 
 head(colnames(trainDf))
 tail(trainDf[,16570:16575])
+
+### list to dataframe
+# install.packages("qdapTools")
+# library(qdapTools)
+# trainDf=list2df(traindata)
+###
 
 #
 #
@@ -130,7 +139,7 @@ nsv
 # convert matrix to list before build models
 str(training$audio_embedding)
 
-audiolist= training$audio_embedding[[36]]
+audiolist= traindata$audio_embedding[[36]]
 head(audiolist, n=10)
 
 audioList36= as.vector(training$audio_embedding[[36]])
@@ -147,6 +156,16 @@ head(adft[,1:5])
 adft[1,1:6]
 colnames(adft)
 
+str(traindata[[3]])
+traindata[[3]]$is_turkey
+traindata[[3]][[2]]
+traindata[[3]][2]
+
+traindata[[3]]$audio_embedding[[2]]
+str(traindata[[3]]$audio_embedding[[2]])
+traindata[[3]]$audio_embedding
+str(traindata[[3]]$audio_embedding)
+as.vector(traindata[[3]]$audio_embedding)
 
 aud_df=data.frame(matrix(ncol = 1280, nrow = 0))
 # aud_dft=data.frame()
@@ -155,9 +174,9 @@ colnames(aud_df)=col
 
 library(plyr)
 for (i in 1:36)   {
-  aud_vec=as.vector(training$audio_embedding[[i]])
+  aud_vec=traindata[[i]]$audio_embedding[[2]]
   aud_vec=t(as.data.frame(aud_vec))
-  aud_df=rbind.fill(aud_df, aud_vec)
+  aud_df=rbind(aud_df, aud_vec)
 }
 
 colnames(aud_df)=col  
@@ -165,7 +184,7 @@ dim(aud_df)
 aud_df[, 1:3]
 head(aud_df[, 30])
 tail(aud_df)
-aud_vec[1]=as.vector(training$audio_embedding[[1]])  
+aud_vec=as.vector(traindata$audio_embedding[[1]])  
 seq_along(training$audio_embedding)
 # aud_df=as.data.frame(aud_vec)
 # aud_dft[i,]=t(aud_df)
