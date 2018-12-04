@@ -195,14 +195,36 @@ aud_df=data.frame(matrix(ncol = 1280, nrow = 0))
 col=paste("ae", as.character(seq(1280)), sep="")  
 colnames(aud_df)=col
 
+#Below is a test
+x=unlist(traindata[[36]]$audio_embedding)
+length(x)=1280
+tail(x)
+y=unlist(traindata[[35]]$audio_embedding)
+df=cbind(x,y)
+df <- data.frame(cbind(df, y))
+head(df)
+rm(df)
+rm(x,y,i)
+# aud_vec=t(as.data.frame(aud_vec))
+# aud_dft=as.data.frame(t(as.data.frame(aud_vec)))
+if (length(aud_vec)==1280){ 
+  colnames(aud_dft)=col 
+  aud_df=rbind.fill(aud_df, aud_dft)
+}
+unique(colnames(aud_df))
+head(aud_df[,10:15])
+rm(aud_dft)
+
+#loop
+aud_df=c()
 for (i in seq_along(traindata))   {
   aud_vec=unlist(traindata[[i]]$audio_embedding)
+  length(aud_vec)=1280 #if not 1280, will be coerced to 1280, empty ones convert to NA
   # aud_vec=t(as.data.frame(aud_vec))
-  aud_dft=as.data.frame(t(as.data.frame(aud_vec)))
+  # aud_dft=as.data.frame(t(as.data.frame(aud_vec)))
   # colnames(aud_dft)=col  
-  if (length(aud_vec)==1280){ 
-  aud_df=rbind.fill(aud_df, aud_dft)
-  }
+  aud_df=data.frame(cbind(aud_df, aud_vec))
+  
 }
 unique(colnames(aud_df))
 tail(colnames(aud_df))
