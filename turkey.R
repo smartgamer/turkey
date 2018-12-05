@@ -195,7 +195,7 @@ aud_df=data.frame(matrix(ncol = 1280, nrow = 0))
 col=paste("ae", as.character(seq(1280)), sep="")  
 colnames(aud_df)=col
 
-#Below is a test
+#Below is a test#
 x=unlist(traindata[[36]]$audio_embedding)
 length(x)=1280
 tail(x)
@@ -214,6 +214,8 @@ if (length(aud_vec)==1280){
 unique(colnames(aud_df))
 head(aud_df[,10:15])
 rm(aud_dft)
+rm(trainDf, fmodel, varImp,x)
+#test ends
 
 #loop
 aud_df=c()
@@ -228,22 +230,28 @@ for (i in seq_along(traindata))   {
 }
 unique(colnames(aud_df))
 tail(colnames(aud_df))
-colnames(aud_df)=col  
-dim(aud_df)
-aud_df[, 1:3]
-head(aud_df[, 30])
-tail(aud_df)
-aud_vec=as.vector(traindata$audio_embedding[[1]])  
-seq_along(training$audio_embedding)
-# aud_df=as.data.frame(aud_vec)
-# aud_dft[i,]=t(aud_df)
 
+audDf=t(aud_df)
+audDf = as.data.frame(audDf)
+colnames(audDf)=col 
+tail(audDf[31:36,1270:1280])  # show NA in 36th row
+audDf[is.na(audDf)] <- 0      #https://stackoverflow.com/questions/10139284/set-na-to-0-in-r
+tail(audDf[31:36,1270:1280]) 
 
+#append the other 4 columns to form whole data frame.
+str(traindata[[1]])  #check structure of one sample in the list
 
-
+tl <- lapply(traindata, function(x) {x[c(2:5)]})  #https://stackoverflow.com/questions/9624169/how-to-subset-from-a-list-in-r
+head(tl)
+library(data.table)
+td=rbindlist(tl, fill=TRUE)  #convert nested list to dataframe. as.data.frame does not work. #https://stackoverflow.com/questions/26177565/converting-nested-list-to-dataframe
+head(td)
+trainDf=cbind(td,audDf)
+head(trainDf[,1:6])
 
 #predict with random forest
-modFit = train(is_turkey ~ .,data=training[2:5],method="rf",prox=TRUE)
+library(caret)
+modFit = train(is_turkey ~ .,data=trainDf,method="rf",prox=TRUE)
 modFit
 
 # Predicting new values
