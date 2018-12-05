@@ -249,9 +249,73 @@ head(td)
 trainDf=cbind(td,audDf)
 head(trainDf[,1:6])
 
+# Removing zero covariates
+nsv = nearZeroVar(audDf[,],saveMetrics=TRUE)
+nsv
+
+########
+#Feature Selection
+set.seed(1001)
+#https://machinelearningmastery.com/feature-selection-with-the-caret-r-package/
+# calculate correlation matrix
+library(caret)
+tdCorMatrix <- cor(trainDf[,3:200])
+# summarize the correlation matrix
+print(tdCorMatrix)
+# find attributes that are highly corrected (ideally >0.75)
+highlyCorrelated <- findCorrelation(tdCorMatrix, cutoff=0.75)
+# print indexes of highly correlated attributes
+print(highlyCorrelated)
+
+##Rank Features By Importance
+# prepare training scheme
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the model
+trainDf2=trainDf
+trainDf2$is_turkey = as.factor(trainDf2$is_turkey)
+install.packages("e1071")
+library(e1071)
+model <- train(is_turkey ~., data=trainDf2, method="lvq", preProcess="scale", trControl=control)
+# estimate variable importance
+importance <- varImp(model, scale=FALSE)
+# summarize importance
+print(importance)
+# plot importance
+plot(importance)
+
+
+#Feature Selection
+# Automatic feature selection methods can be used to build many models with different subsets of a dataset and identify those attributes that are and are not required to build an accurate model.
+# A popular automatic method for feature selection provided by the caret R package is called Recursive Feature Elimination or RFE.
+# The example below provides an example of the RFE method on the Pima Indians Diabetes dataset. A Random Forest algorithm is used on each iteration to evaluate the model. The algorithm is configured to explore all possible subsets of the attributes. All 8 attributes are selected in this example, although in the plot showing the accuracy of the different attribute subset sizes, we can see that just 4 attributes gives almost comparable results.
+# Automatically select features using Caret R PackageR
+
+# ensure the results are repeatable
+set.seed(7)
+# load the library
+library(mlbench)
+library(caret)
+# load the data
+data(PimaIndiansDiabetes)
+# define the control using a random forest selection function
+control <- rfeControl(functions=rfFuncs, method="cv", number=10)
+# run the RFE algorithm
+results <- rfe(PimaIndiansDiabetes[,1:8], PimaIndiansDiabetes[,9], sizes=c(1:8), rfeControl=control)
+# summarize the results
+print(results)
+# list the chosen features
+predictors(results)
+# plot the results
+plot(results, type=c("g", "o"))
+#####
+
+
 #predict with random forest
 library(caret)
 modFit = train(is_turkey ~ .,data=trainDf,method="rf",prox=TRUE)
+
+modFit = train(is_turkey ~ end_time_seconds_youtube_clip + start_time_seconds_youtube_clip+ ae1 + ae2,data=trainDf,method="rf",prox=TRUE)
+
 modFit
 
 # Predicting new values
