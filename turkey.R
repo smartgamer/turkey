@@ -254,12 +254,12 @@ nsv = nearZeroVar(audDf[,],saveMetrics=TRUE)
 nsv
 
 ########
-#Feature Selection
+# Feature Selection #
 set.seed(1001)
 #https://machinelearningmastery.com/feature-selection-with-the-caret-r-package/
 # calculate correlation matrix
 library(caret)
-tdCorMatrix <- cor(trainDf[,3:200])
+tdCorMatrix <- cor(trainDf[,3:1284])
 # summarize the correlation matrix
 print(tdCorMatrix)
 # find attributes that are highly corrected (ideally >0.75)
@@ -273,9 +273,12 @@ control <- trainControl(method="repeatedcv", number=10, repeats=3)
 # train the model
 trainDf2=trainDf
 trainDf2$is_turkey = as.factor(trainDf2$is_turkey)
-install.packages("e1071")
+# install.packages("e1071")
 library(e1071)
-model <- train(is_turkey ~., data=trainDf2, method="lvq", preProcess="scale", trControl=control)
+colnames(trainDf2[,1:5])
+trainDf3=trainDf2[,-2]  #remove id column, which is not useful
+colnames(trainDf3[,1:5])
+model <- train(is_turkey ~., data=trainDf3[,1:20], method="lvq", preProcess="scale", trControl=control)
 # estimate variable importance
 importance <- varImp(model, scale=FALSE)
 # summarize importance
@@ -291,16 +294,34 @@ plot(importance)
 # Automatically select features using Caret R PackageR
 
 # ensure the results are repeatable
+
+trainDf4=trainDf3[,-1]
+trainDf4 <- trainDf4[,-nearZeroVar(trainDf4)]
+colnames(trainDf4[,1:6])
+tdCorMatrix2 <- cor(trainDf4)
+# summarize the correlation matrix
+print(tdCorMatrix2)
+# find attributes that are highly corrected (ideally >0.75)
+highlyCorrelated2 <- findCorrelation(tdCorMatrix2, cutoff=0.75)
+length(highlyCorrelated2)
+head(highlyCorrelated2)
+
+library(data.table)
+trainDf5=setDF(trainDf4)  #change class to data.frame. because data.table can't do column subset by indices.
+class(trainDf4)
+trainDf5=trainDf4[, -highlyCorrelated2]
+colnames(trainDf5[,1:6])
+
 set.seed(7)
 # load the library
-library(mlbench)
 library(caret)
-# load the data
-data(PimaIndiansDiabetes)
 # define the control using a random forest selection function
 control <- rfeControl(functions=rfFuncs, method="cv", number=10)
 # run the RFE algorithm
-results <- rfe(PimaIndiansDiabetes[,1:8], PimaIndiansDiabetes[,9], sizes=c(1:8), rfeControl=control)
+?rfe
+results <- rfe(trainDf5[,1:8], trainDf3[,1], sizes=c(2:8), rfeControl=control)
+
+
 # summarize the results
 print(results)
 # list the chosen features
@@ -314,7 +335,7 @@ plot(results, type=c("g", "o"))
 library(caret)
 modFit = train(is_turkey ~ .,data=trainDf,method="rf",prox=TRUE)
 
-modFit = train(is_turkey ~ end_time_seconds_youtube_clip + start_time_seconds_youtube_clip+ ae1 + ae2,data=trainDf,method="rf",prox=TRUE)
+modFit = train(is_turkey ~ ae3+ae4+ae14+ae13+ae15, data=trainDf3,method="rf",prox=TRUE)
 
 modFit
 
