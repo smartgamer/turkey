@@ -257,6 +257,7 @@ nsv
 # Feature Selection #
 set.seed(1001)
 #https://machinelearningmastery.com/feature-selection-with-the-caret-r-package/
+#3 feature selection methods provided by the caret R package. Specifically, searching for and removing redundant features, ranking features by importance and automatically selecting a subset of the most predictive features.
 # calculate correlation matrix
 library(caret)
 tdCorMatrix <- cor(trainDf[,3:1284])
@@ -319,9 +320,10 @@ library(caret)
 control <- rfeControl(functions=rfFuncs, method="cv", number=10)
 # run the RFE algorithm
 ?rfe
-results <- rfe(trainDf5[,1:8], trainDf3[,1], sizes=c(2:8), rfeControl=control)
-
-
+class(trainDf3[,1])
+trainDf3df=setDF(trainDf3)  #convert data.table to data.frame
+class(trainDf3df)
+results <- rfe(trainDf5[,2:8], trainDf3[,1], sizes=c(2:8), rfeControl=control)
 # summarize the results
 print(results)
 # list the chosen features
@@ -391,8 +393,8 @@ pred = predict(modFit,testDf)
 head(pred)
 tail(pred)
 write.csv(pred, "prediction.csv")
-
-
+##
+######
 
 
 
