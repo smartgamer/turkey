@@ -339,8 +339,8 @@ modFit = train(is_turkey ~ ae3+ae4+ae14+ae13+ae15, data=trainDf3,method="rf",pro
 
 modFit
 
-
-#test data
+###
+# test data #
 testDf = data.frame(matrix(unlist(testdata), nrow=1196, byrow=T))
 vars_test=unique(unlist(lapply(testdata, names))) #names of top layer lists
 vars_test
@@ -386,16 +386,11 @@ head(td_test)
 testDf=cbind(td_test,audDf_test)
 head(testDf[,1:6])
 
-
 # Predicting new values
 pred = predict(modFit,testDf) 
 head(pred)
 tail(pred)
 write.csv(pred, "prediction.csv")
-
-testDf$predRight = pred==testing$Species
-table(pred,testing$Species)
-qplot(Petal.Width,Petal.Length,colour=predRight,data=testing,main="newdata Predictions")
 
 
 
