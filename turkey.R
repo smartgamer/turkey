@@ -339,8 +339,61 @@ modFit = train(is_turkey ~ ae3+ae4+ae14+ae13+ae15, data=trainDf3,method="rf",pro
 
 modFit
 
+
+#test data
+testDf = data.frame(matrix(unlist(testdata), nrow=1196, byrow=T))
+vars_test=unique(unlist(lapply(testdata, names))) #names of top layer lists
+vars_test
+ae_test=unlist(lapply(traindata$audio_embedding, c()))
+str(testdata[[1]]$audio_embedding) #List of 10  X128
+str(testdata[[36]]$audio_embedding) #List of 9
+
+#convert nested list to dataframe
+##
+library(plyr)
+# aud_df_test=data.frame(matrix(ncol = 1280, nrow = 0))
+
+col=paste("ae", as.character(seq(1280)), sep="")  
+colnames(aud_df_test)=col
+
+#loop
+aud_df_test=c()
+for (i in seq_along(testdata))   {
+  aud_vec_test=unlist(testdata[[i]]$audio_embedding)
+  length(aud_vec_test)=1280 #if not 1280, will be coerced to 1280, empty ones convert to NA
+  aud_df_test=data.frame(cbind(aud_df_test, aud_vec_test))
+  
+}
+unique(colnames(aud_df_test))
+tail(colnames(aud_df_test))
+head(colnames(aud_df_test))
+
+audDf_test=t(aud_df_test)
+audDf_test = as.data.frame(audDf_test)
+colnames(audDf_test)=col 
+tail(audDf_test[31:36,1270:1280])  # show NA in 36th row
+audDf_test[is.na(audDf_test)] <- 0      #https://stackoverflow.com/questions/10139284/set-na-to-0-in-r
+tail(audDf_test[31:36,1270:1280]) 
+
+#append the other 4 columns to form whole data frame.
+str(testdata[[10]])  #check structure of one sample in the list
+
+tl_test <- lapply(testdata, function(x) {x[c(2:4)]})  #test data lacks is_turkey, which will be predicted
+head(tl_test)
+library(data.table)
+td_test=rbindlist(tl_test, fill=TRUE)  #convert nested list to dataframe. as.data.frame does not work. #https://stackoverflow.com/questions/26177565/converting-nested-list-to-dataframe
+head(td_test)
+testDf=cbind(td_test,audDf_test)
+head(testDf[,1:6])
+
+
 # Predicting new values
-pred = predict(modFit,testing); testing$predRight = pred==testing$Species
+pred = predict(modFit,testDf) 
+head(pred)
+tail(pred)
+write.csv(pred, "prediction.csv")
+
+testDf$predRight = pred==testing$Species
 table(pred,testing$Species)
 qplot(Petal.Width,Petal.Length,colour=predRight,data=testing,main="newdata Predictions")
 
