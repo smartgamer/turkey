@@ -323,9 +323,16 @@ control <- rfeControl(functions=rfFuncs, method="cv", number=10)
 class(trainDf3[,1])
 trainDf3df=setDF(trainDf3)  #convert data.table to data.frame
 class(trainDf3df)
-results <- rfe(trainDf5[,2:8], trainDf3[,1], sizes=c(2:8), rfeControl=control)
+results <- rfe(trainDf5[,2:1236], trainDf3[,1], sizes=c(2:10), rfeControl=control); system("xdg-open 'https://www.youtube.com/watch?v=ofXaWirL7iE&t=69s'")
+system("xdg-open 'https://www.youtube.com/watch?v=ofXaWirL7iE&t=69s'")
+# install.packages("beepr")
+library(beepr)
+beep()
 # summarize the results
 print(results)
+# The top 5 variables (out of 1235):
+#   ae3, ae387, ae1027, ae1155, ae532
+
 # list the chosen features
 predictors(results)
 # plot the results
@@ -366,11 +373,18 @@ biplot(wine_pca)
 
 #predict with random forest
 library(caret)
-modFit = train(is_turkey ~ .,data=trainDf,method="rf",prox=TRUE)
+modFit = train(is_turkey ~ .,data=trainDf,method="rf",prox=TRUE) #too many variables, so choose a few variable as shown above
 
-modFit = train(is_turkey ~ ae3+ae4+ae14+ae13+ae15, data=trainDf3,method="rf",prox=TRUE)
-
+modFit = train(is_turkey ~ ae3+ae387+ae1027+ae1155+ae532, data=trainDf3,method="rf",prox=TRUE); system("xdg-open 'https://www.youtube.com/watch?v=ofXaWirL7iE&t=69s'")
 modFit
+
+#variable importance
+varImp(modFit)  #scaled
+varImp(modFit,scale = FALSE)
+fm <- modFit$finalModel
+library(randomForest)
+importance(fm)  #same as varImp without scale
+
 
 ###
 # test data #
@@ -423,7 +437,7 @@ head(testDf[,1:6])
 pred = predict(modFit,testDf) 
 head(pred)
 tail(pred)
-write.csv(pred, "prediction.csv")
+write.csv(pred, "prediction2.csv")
 ##
 ######
 
