@@ -345,8 +345,15 @@ library(caret)
 modFit = train(is_turkey ~ .,data=trainDf,method="rf",prox=TRUE) #too many variables, so choose a few variable as shown above
 
 modFit = train(is_turkey ~ ae3+ae387+ae1027+ae1155+ae532, data=trainDf3,method="rf",prox=TRUE); system("xdg-open 'https://www.youtube.com/watch?v=ofXaWirL7iE&t=69s'")
-
 modFit
+
+#variable importance
+varImp(modFit)  #scaled
+varImp(modFit,scale = FALSE)
+fm <- modFit$finalModel
+library(randomForest)
+importance(fm)  #same as varImp without scale
+
 
 ###
 # test data #
