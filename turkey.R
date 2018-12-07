@@ -254,7 +254,7 @@ nsv = nearZeroVar(audDf[,],saveMetrics=TRUE)
 nsv
 
 ########
-# Feature Selection #
+# Feature Selection # start
 set.seed(1001)
 #https://machinelearningmastery.com/feature-selection-with-the-caret-r-package/
 #3 feature selection methods provided by the caret R package. Specifically, searching for and removing redundant features, ranking features by importance and automatically selecting a subset of the most predictive features.
@@ -331,6 +331,37 @@ predictors(results)
 # plot the results
 plot(results, type=c("g", "o"))
 #####
+# Principal Component Analysis (PCA) is a statistical procedure that transforms and converts a data set into a new data set containing linearly uncorrelated variables, known as principal components. The basic idea is that the data set is transformed into a set of components where each one attempts to capture as much of the variance (information) in data as possible.
+# The wine dataset is included in the [HDClassif] package, so let’s install that and examine the dataset.
+
+install.packages("HDclassif")
+library(HDclassif)
+data(wine)
+str(wine)
+Unfortunately the chemical constituents are named V1-V13. Let’s fix that.
+
+names(wine) <- c("Type", "Alcohol", "Malic acid", "Ash", "Alcalinity of ash", 
+                 "Magnesium", "Total phenols", "Flavanoids", "Nonflavanoid phenols", 
+                 "Proanthocyanins", "Color intensity", "Hue", "OD280/OD315 of diluted wines", 
+                 "Proline")
+We can use the prcomp function from the stats package to do the PCA.
+
+install.packages("stats")
+library(stats)
+wine_pca <- prcomp(wine, center = TRUE, scale = TRUE) 
+summary(wine_pca)
+This will display a table containing the following statistical data:
+  
+  PC1    PC2    PC3 ...
+Cumulative Proportion  0.362 0.5541 0.6653 ...
+What this tells us is that the first two components account for over 55% of the variance in the entire data set. While it would be difficult to justify basing the entire analysis on 55% of the available information, it’s interesting to see that we can account for 55% of the information with 15% of the data.
+
+Visualizing the data set
+Let’s visualize the data set using the first two principal components.
+
+biplot(wine_pca)
+
+####end
 
 
 #predict with random forest
