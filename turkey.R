@@ -345,29 +345,35 @@ install.packages("HDclassif")
 library(HDclassif)
 data(wine)
 str(wine)
-Unfortunately the chemical constituents are named V1-V13. Let’s fix that.
-
+# Unfortunately the chemical constituents are named V1-V13. Let’s fix that.
+# 
 names(wine) <- c("Type", "Alcohol", "Malic acid", "Ash", "Alcalinity of ash", 
                  "Magnesium", "Total phenols", "Flavanoids", "Nonflavanoid phenols", 
                  "Proanthocyanins", "Color intensity", "Hue", "OD280/OD315 of diluted wines", 
                  "Proline")
-We can use the prcomp function from the stats package to do the PCA.
+# We can use the prcomp function from the stats package to do the PCA.
 
 install.packages("stats")
 library(stats)
 wine_pca <- prcomp(wine, center = TRUE, scale = TRUE) 
 summary(wine_pca)
-This will display a table containing the following statistical data:
+# This will display a table containing the following statistical data:
   
-  PC1    PC2    PC3 ...
-Cumulative Proportion  0.362 0.5541 0.6653 ...
-What this tells us is that the first two components account for over 55% of the variance in the entire data set. While it would be difficult to justify basing the entire analysis on 55% of the available information, it’s interesting to see that we can account for 55% of the information with 15% of the data.
+#   PC1    PC2    PC3 ...
+# Cumulative Proportion  0.362 0.5541 0.6653 ...
+# What this tells us is that the first two components account for over 55% of the variance in the entire data set. While it would be difficult to justify basing the entire analysis on 55% of the available information, it’s interesting to see that we can account for 55% of the information with 15% of the data.
 
-Visualizing the data set
-Let’s visualize the data set using the first two principal components.
+# Visualizing the data set
+# Let’s visualize the data set using the first two principal components.
 
 biplot(wine_pca)
 
+wine[c(4, 19),]
+# A quick review will confirm that that are indeed quite similar.
+
+# What about the red arrows (vectors) in the diagram? We can hide the wines to make it easier to view these vectors.
+
+biplot(wine_pca, xlabs = rep("", nrow(wine)))
 ####end
 
 
